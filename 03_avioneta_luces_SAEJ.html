@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Práctica 3</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Canvas where the render shows -->
+    <canvas id="myCanvas"></canvas>
+
+    <!-- Aquí va todo el código de three.js -->
+    <script type="module">
+      // 📚  Librerías importadas para hacer funcionar three.js y el OrbitControls
+      import * as THREE from './js/three.module.js';
+      import { OrbitControls } from './js/OrbitControls.js';
+
+      // ⚙️ Renderer
+      var renderer = new THREE.WebGLRenderer({
+        canvas: document.getElementById('myCanvas'),
+        antialias: true,
+      });
+      renderer.setPixelRatio(window.decivePixelRatio);
+      renderer.setSize(window.innerWidth, window.innerHeight);
+
+      // 🎬 Creando nueva escena
+      var scene = new THREE.Scene();
+
+      // 📷 Creando nueva cámara de perspectiva
+      var camera = new THREE.PerspectiveCamera(
+        70,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        50
+      );
+      scene.add(camera);
+
+      // 🎮 Añadiendo los OrbitControls
+      var controls = new OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.05;
+
+      // Añadiendo GridHelper
+      const size = 10;
+      const divisions = 10;
+      const gridHelper = new THREE.GridHelper(size, divisions);
+      scene.add(gridHelper); //Si lo quitas explota todo
+
+      // 🛩️🛩️🛩️🛩️ Avioneta 🛩️🛩️🛩️🛩️
+
+      // Elementos
+      const geometry = new THREE.SphereGeometry(1, 32, 16);
+      const material = new THREE.MeshLambertMaterial({ color: 0xff6b00 });
+      const fuselaje = new THREE.Mesh(geometry, material);
+      fuselaje.scale.x = 2;
+      scene.add(fuselaje);
+
+      const alas = new THREE.Mesh(geometry, material);
+      alas.scale.y = 0.3;
+      alas.scale.z = 4;
+      alas.position.y = 0.5;
+      scene.add(alas);
+
+      const estabilizador_vertical = new THREE.Mesh(geometry, material);
+      estabilizador_vertical.scale.x = 0.5;
+      estabilizador_vertical.scale.y = 0.8;
+      estabilizador_vertical.scale.z = 0.2;
+      estabilizador_vertical.position.x = -1.5;
+      estabilizador_vertical.position.y = 0.5;
+      scene.add(estabilizador_vertical);
+
+      const estabilizador_horizontal = new THREE.Mesh(geometry, material);
+      estabilizador_horizontal.scale.x = 0.4;
+      estabilizador_horizontal.scale.y = 0.8;
+      estabilizador_horizontal.scale.z = 0.1;
+      estabilizador_horizontal.rotation.x = Math.PI * 0.5;
+      estabilizador_horizontal.rotation.y = Math.PI * 1;
+      estabilizador_horizontal.position.y = 1;
+      estabilizador_horizontal.position.x = -1.5;
+      scene.add(estabilizador_horizontal);
+
+      const helice1 = new THREE.Mesh(geometry, material);
+      helice1.position.x = 2;
+      helice1.scale.x = 0.1;
+      helice1.scale.y = 0.8;
+      helice1.scale.z = 0.2;
+      scene.add(helice1);
+
+      const helice2 = helice1.clone();
+      helice2.position.x = 2;
+      helice2.rotation.x = Math.PI * 0.5;
+      scene.add(helice2);
+
+      //Grupo de helices 
+      var grupo_de_helices = new THREE.Group();
+
+// Añadiendo cada hélice al grupo
+     grupo_de_helices.add(helice1, helice2);
+
+//Añadiendo el grupo a la escena
+     scene.add(grupo_de_helices);
+
+      var toda_la_avioneta=new THREE.Group();
+      toda_la_avioneta.add(
+        fuselaje,
+        alas,
+        estabilizador_horizontal,
+        estabilizador_vertical,
+       grupo_de_helices,
+       Luces
+      );
+      scene.add(toda_la_avioneta);
+
+      //🔦 Luces
+      var light01 = new THREE.PointLight(0xffffff, 1);
+      light01.position.set(-10, 0, 10);
+      scene.add(light01);
+
+      var light02 = new THREE.PointLight(0xffffff, 1);
+      light02.position.set(100, -10, 30);
+      scene.add(light02);
+
+      var Luces= new THREE.Group();
+      Luces.add(
+        light01,
+        light02
+      );
+      scene.add(Luces);
+
+      //Settings de la cámara
+      camera.position.set(0, 0, 10);
+
+      //👇 Código para animar la avioneta arriba abajo
+
+      // ⌚ Reloj three.js
+      var clock = new THREE.Clock();
+
+      // 👟 Movimiento sinusoidal de la avioneta
+      var velocidad = 4,     amplitud = 0.5;
+
+      // Código de la función
+      
+
+// Declaración de la función
+function avioneta_movimiento_sin() {
+  toda_la_avioneta.position.y = Math.sin(clock.getElapsedTime() * velocidad) * amplitud;
+   }
+
+      //🔥🔥🔥🔥🔥Rendering y animación🔥🔥🔥🔥🔥
+      requestAnimationFrame(render);
+      function render()
+     
+      {
+        grupo_de_helices.rotation.x += 0.2;
+        avioneta_movimiento_sin();
+        //💃 Animación
+
+        //Actualización del OrbitControls para generar la suavidad de movimiento
+        controls.update();
+
+        //Llamado para renderizar y volver a llamar a la misma función (render)
+        renderer.render(scene, camera);
+        requestAnimationFrame(render);
+      }
+    </script>
+  </body>
+</html>
