@@ -160,13 +160,42 @@
     toda_la_avioneta.position.y = Math.sin(clock.getElapsedTime() * velocidad) * amplitud;
   }
 
+  var posiciones_originales = {
+    posicion_en_x: 0,
+    posicion_en_y: 0,
+    posicion_en_z: 0,
+  };
+
+  var nuevas_posiciones = {
+    posicion_en_x: 20,
+    posicion_en_y: 4,
+    posicion_en_z: 0,
+  };
+
+// Objeto Tween ✨
+  var tween = new TWEEN.Tween(posiciones_originales);
+  tween.repeat(Infinity);
+  tween.easing(TWEEN.Easing.Quadratic.Out); //👈 Easing de la animación
+
+//Función magia_tweening() para inicializar el interpolado
+  function magia_tweening() {
+    tween.to(nuevas_posiciones, 2000);
+    tween.start();
+  }
+
+//👇 Llamando de magia_tweening()
+  magia_tweening();
+
   //🔥🔥🔥🔥🔥Rendering y animación🔥🔥🔥🔥🔥
   requestAnimationFrame(render);
   function render(){
     grupo_de_helices.rotation.x += 0.2;
     avioneta_movimiento_sin();
     //💃 Animación
-
+    toda_la_avioneta.position.y = posiciones_originales.posicion_en_y;
+    toda_la_avioneta.position.x = posiciones_originales.posicion_en_x;
+    toda_la_avioneta.position.z = posiciones_originales.posicion_en_z;
+    TWEEN.update(); //👈 Método para actualizar el Tween
     //Actualización del OrbitControls para generar la suavidad de movimiento
     controls.update();
 
