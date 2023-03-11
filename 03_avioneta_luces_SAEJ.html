@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Práctica 3</title>
+    <title>Práctica 5</title>
     <style>
       * {
         box-sizing: border-box;
@@ -48,6 +48,30 @@
       50
     );
     scene.add(camera);
+
+  // 💻 Evento para redimensionar el 'canvas'//------------------------------------------
+  // 📐 Sizes: Objeto donde se toman los tamaños interiores 'inner' de la ventana.
+    const sizes = {                     
+      width: window.innerWidth,
+      height: window.innerHeight,
+    };
+
+ // 🖼 Tomando el 'canvas' mediante el id 'myCanvas' de nuestro HTML para cambiar sus dimensiones
+    const canvas = document.getElementById('myCanvas');
+
+ // 🎉 Evento que se ejecutará al redimensionar 'resize' nuestra ventana
+    window.addEventListener('resize', () => {
+    // Actualizando los valores del objeto 'sizes' con las medidas internas de la ventana
+      sizes.width = window.innerWidth;
+      sizes.height = window.innerHeight;
+
+    // Actualización de los valores en la cámara como la relación-aspecto y la matriz de proyección.
+    camera.aspect = sizes.width / sizes.height;
+    camera.updateProjectionMatrix();
+
+    // Aplicando al render el nuevo tamaño del 'viewport'
+    renderer.setSize(sizes.width, sizes.height);
+    });
 
     // 🎮 Añadiendo los OrbitControls
     var controls = new OrbitControls(camera, renderer.domElement);
@@ -164,6 +188,8 @@
     posicion_en_x: 0,
     posicion_en_y: 0,
     posicion_en_z: 0,
+    rotacion_en_x: 0, // 👈 Nuevas propiedades para rotar el objeto.
+    rotacion_en_z: 0, // 👈 
   };
 
   var nuevas_posiciones = {
@@ -174,7 +200,8 @@
 
 // Objeto Tween ✨
   var tween = new TWEEN.Tween(posiciones_originales);
-  tween.repeat(Infinity);
+  var tween_rotation = new TWEEN.Tween(posiciones_originales); //👈 Nuevo objeto 'tween'
+  // tween.repeat(Infinity);
   tween.easing(TWEEN.Easing.Quadratic.Out); //👈 Easing de la animación
 
 //Función magia_tweening() para inicializar el interpolado
@@ -186,6 +213,47 @@
 //👇 Llamando de magia_tweening()
   magia_tweening();
 
+  camera.position.set(-10, 4, 0);
+
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'ArrowUp') {
+      tween.to({ posicion_en_y: toda_la_avioneta.position.y +1}, 400 );
+      tween.start();
+
+      tween_rotation.to({ rotacion_en_z: Math.PI * (1 / 8) }, 200); // 👈 Personaliza el giro
+      tween_rotation.repeat(1);
+      tween_rotation.easing(TWEEN.Easing.Quadratic.InOut); // 👈 Personaliza el estilo del 'tweening'
+      tween_rotation.yoyo(true); 
+      tween_rotation.start();
+
+    }
+    if (event.key === 'ArrowLeft') {
+      tween.to({ posicion_en_z: toda_la_avioneta.position.z -1}, 400 );
+      tween.start();
+
+    }
+    if (event.key === 'ArrowRight') {
+      tween.to({ posicion_en_z: toda_la_avioneta.position.z +1}, 400 );
+      tween.start();
+
+    }
+    if (event.key === 'ArrowDown') {
+      tween.to({ posicion_en_y: toda_la_avioneta.position.y -1}, 400 );
+      tween.start();
+
+    }
+    if (event.key === 'Backspace' ) {
+      tween.to({ 
+        posicion_en_x: toda_la_avioneta.position.x = 0,
+        posicion_en_y: toda_la_avioneta.position.y = 0,
+        posicion_en_z: toda_la_avioneta.position.z = 0
+      },400)
+      tween.start();
+    }
+    if (event.key === 'Enter'){
+      magia_tweening();
+    }
+  });
   //🔥🔥🔥🔥🔥Rendering y animación🔥🔥🔥🔥🔥
   requestAnimationFrame(render);
   function render(){
@@ -195,6 +263,8 @@
     toda_la_avioneta.position.y = posiciones_originales.posicion_en_y;
     toda_la_avioneta.position.x = posiciones_originales.posicion_en_x;
     toda_la_avioneta.position.z = posiciones_originales.posicion_en_z;
+    toda_la_avioneta.rotation.z = posiciones_originales.rotacion_en_z; // 👈 
+    toda_la_avioneta.rotation.x = posiciones_originales.rotacion_en_x; // 👈
     TWEEN.update(); //👈 Método para actualizar el Tween
     //Actualización del OrbitControls para generar la suavidad de movimiento
     controls.update();
